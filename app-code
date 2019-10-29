@@ -1,0 +1,129 @@
+// Location where prompt sound files are stored
+var SOUND_BASE_URL = new Audio("https://res.cloudinary.com/dzjhklhwk/raw/upload/v1544541715/Jeopardy-theme-song.zip");
+
+//colors to pick from 
+var GRIN = new Color(0, 153, 51);
+var RID = new Color(204, 0, 0);
+
+var ANSWERS = [RID, GRIN, GRIN, RID, RID, RID, RID, RID, RID, GRIN, RID, RID, RID, RID, RID, RID, GRIN, RID, GRIN, RID, RID, RID, GRIN, RID, GRIN];
+
+var QUESTIONS = ["Their going to the game.", "My grandma’s cat licked its tail.", "They’re the people in charge.","It’s not a faze mom.","The flours were handpicked.","There are too pieces of pizza.","She walked accross the street.","You’re dog is ugly.","The giraffe ate some leaves."," Our program was a success.","The caldendor is from 1985.", "She died her hair.","The acceptance letters were maled out.","They play the base guitar.","Plane and plain mean the same thing.","She know nows where to go.","Bears, Beets, Battlestar Galactica.","I can’t sea without my glasses.","They waited patiently.","They went inn side.","She accidently told everyone her secret.","They looked very similer.","The band played a difficult rhythm.","I helped him tye his tie.","People tend to misspell common words." ];
+
+
+var NUM_ROWS = 1;
+var colorID = -1; 
+var total = 0;
+var correct = 0;
+var queryTxt = null;
+var newColor = true;
+var newQuestion = true;
+var prePrompt = new Audio(SOUND_BASE_URL + "https://res.cloudinary.com/dzjhklhwk/raw/upload/v1544542897/Magic-chimes-transition-reverb.zip");
+var audioOn= true;
+
+function start(){
+    background();
+    var askName = readLine("What is your name?");
+    mouseClickMethod(handleClick);
+    topTxt();
+    keyUpMethod(handleKeyUp);
+    mouseDragMethod(drg);
+    createSwatches();
+    setQueryTxt("Is " + askName + " a Grammar Wiz? Click!");
+}
+
+function topTxt(){
+    var txt = new Text("Press Q to quit. S to turn sound on/off.", "12pt Serif");
+    txt.setPosition(getWidth() / 2 - txt.getWidth() / 2, txt.getHeight());
+    add(txt);
+    
+    var bTxt = new Text("Incorrect", "30pt Serif");
+    bTxt.setPosition((getWidth() / 2 - txt.getWidth() / 2)+10, getHeight()/2);
+    add(bTxt);
+    
+    var bTxt2 = new Text("Correct", "30pt Serif");
+    bTxt2.setPosition((getWidth() / 2 - txt.getWidth() / 2)+ 200, getHeight()/2);
+    add(bTxt2);
+}
+function background(){
+    var HO = new Color(255, 204, 153);
+    var rect = new Rectangle(getWidth(), getHeight());
+    rect.setColor(HO);
+    rect.setPosition(0,0);
+    add(rect);
+}
+function createSwatches(){
+    var numCols = 2; 
+    var swatchWidth = getWidth() / numCols; 
+    var swatchHeight = getHeight() / 2 / NUM_ROWS;  
+    for (var row = 0; row < NUM_ROWS; row++) {
+        for (var col = 0; col < numCols; col++) {
+            var swatch = new Rectangle(swatchWidth, swatchHeight);
+            swatch.setPosition(swatchWidth * col, getHeight() / 2 + swatchHeight * row);
+            swatch.setColor(ANSWERS[row * numCols + col]);
+            add(swatch);
+        }
+    }
+}
+function setQueryTxt(txt) {
+    if (queryTxt == null) {
+        queryTxt = new Text(txt, "20pt Serif");
+        var x = getWidth() / 2 - queryTxt.getWidth() / 2;
+        var y = getHeight() / 3 - queryTxt.getHeight() / 2;
+        queryTxt.setPosition(x, y);
+        add(queryTxt);
+    }
+    queryTxt.setText(txt);
+    var x = getWidth() / 2 - queryTxt.getWidth() / 2;
+    var y = getHeight() / 3 - queryTxt.getHeight() / 2;
+    queryTxt.setPosition(x, y);
+}
+function showNextColor() {
+    if (newColor == true) {
+    colorID = Randomizer.nextInt(0, ANSWERS.length - 1);
+    }
+    var name = QUESTIONS[colorID];    
+    setQueryTxt(name );    
+    if (audioOn) {  
+        prePrompt.play();  
+        setTimeout(playPrompt, 900);   
+    }
+    total++;   
+}
+function playPrompt() {
+    var name = QUESTIONS[colorID];
+    var prompt = new Audio(SOUND_BASE_URL + name + "https://res.cloudinary.com/dzjhklhwk/raw/upload/v1544541715/Jeopardy-theme-song.zip"); 
+    prompt.play();
+}
+function handleClick(e) {
+    if (colorID == -1) showNextColor();
+    if (e.getY() < getWidth() / 2) return;
+    var elem = getElementAt(e.getX(), e.getY());
+    if (elem.getColor() == ANSWERS[colorID]) {
+        setQueryTxt("Wow, you got it right!");
+        correct++
+        newColor = true;
+    } else {
+        setQueryTxt("Ooof, wrong.")
+        newColor = false;
+    }
+    setTimeout(showNextColor, 2000); 
+}
+function handleKeyUp(e) {
+    if (e.keyCode == Keyboard.letter('q') || e.keyCode == Keyboard.letter('Q')) {
+        setQueryTxt("Determining score...");
+        
+        setTimeout(function() {
+            println(name +"'s score:");
+            setQueryTxt("Correct: " + correct + " Wrong: " + ((total - 1) - correct));
+        }, 2000);
+    }
+    if (e.keyCode == Keyboard.letter('s') || e.keyCode == Keyboard.letter('S')) {
+        audioOn = !audioOn;
+    }
+}
+function drg(){
+    setTimeout(function() {
+            println(name +"'s score:");
+            setQueryTxt("Correct: " + correct + " Wrong: " + ((total - 1) - correct));
+        }, 2000);
+}
